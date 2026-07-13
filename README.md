@@ -12,7 +12,7 @@ This repository documents a small research project that tested whether retail tr
 
 ## Start Here
 
-**[👉 READ THE FULL RESEARCH MEMO](./RESEARCH_MEMO.md)**
+**[👉 READ THE FULL RESEARCH MEMO](./docs/RESEARCH_MEMO.md)**
 
 The memo tells the complete story: from initial hypothesis through the discovery of real but unattainable mean reversion, to the final realization that Polymarket's fee curve was engineered specifically to eliminate this edge.
 
@@ -144,54 +144,40 @@ The research methodology—null model, synthetic validation, real data confirmat
 - Roll, R. (1984). "A Simple Implicit Measure of the Effective Bid-Ask Spread in an Efficient Market"
 - Polymarket Fee Documentation (docs.polymarket.com/trading/fees, verified July 2026)
 - Polymarket API docs (public, no auth required)
+- HuggingFace Dataset: `aliplayer1/polymarket-crypto-updown` (6,742 markets, 1.9M orderbook snapshots)
 
 ## Repository Structure
 
 ```
 .
+.
+├── .gitignore
+├── LICENSE.md
 ├── README.md
-├── data/
-│   ├── bbo_5m.parquet
-│   ├── markets_5m.parquet
-│   └── hf/
-│       ├── .cache/
-│       │   └── huggingface/
-│       │       ├── download/
-│       │       │   └── data/
-│       │       │       ├── orderbook/
-│       │       │       └── ticks/
-│       │       └── trees/
-│       └── data/
-│           ├── orderbook/
-│           └── ticks/
-├── output/
-│   ├── edge_fade_trades.parquet
-│   ├── edge_spotmom_trades.parquet
-│   ├── grid_summary_maker.csv
-│   ├── grid_summary_taker.csv
-│   ├── synthetic_results.png
-│   ├── touch_probabilities.csv
-│   ├── real/
-│   └── test/
+├── docs/
+│   ├── EXECUTIVE_SUMMARY.txt
+│   ├── INDEX.md
+│   ├── RESEARCH_MEMO.md
+│   └── VISUAL_SUMMARY.md
 ├── polyvol/
-│   ├── __init__.py
-│   ├── backtest.py
-│   ├── fees.py
-│   ├── reconstruct.py
-│   ├── strategy.py
-│   ├── strategy_bbo.py
-│   ├── synthetic.py
-│   └── data/
-│       └── polymarket_api.py
+│   ├── __init__.py
+│   ├── backtest.py
+│   ├── fees.py
+│   ├── reconstruct.py
+│   ├── strategy.py
+│   ├── strategy_bbo.py
+│   ├── synthetic.py
+│   └── data/
+│       └── polymarket_api.py
 └── scripts/
-    ├── bbo_mid_reversion.py
-    ├── edge.economics.py
-    ├── hf_ingest.py
-    ├── mean_reversion_test.py
-    ├── run_bbo.py
-    ├── run_real_backtest.py
-    ├── run_synthetic.py
-    └── spot_lag_test.py
+    ├── bbo_mid_reversion.py
+    ├── edge.economics.py
+    ├── hf_ingest.py
+    ├── mean_reversion_test.py
+    ├── run_bbo.py
+    ├── run_real_backtest.py
+    ├── run_synthetic.py
+    └── spot_lag_test.py
 ```
 
 ## License & Attribution

@@ -10,17 +10,11 @@
 
 | File | Purpose | Time | Read If... |
 |------|---------|------|-----------|
-| **[README.md](README.md)** | GitHub landing page & quick summary | 10 min | You want the overview first |
 | **[EXECUTIVE_SUMMARY.txt](EXECUTIVE_SUMMARY.txt)** | One-page summary (print-friendly) | 5 min | You need a quick reference |
 | **[VISUAL_SUMMARY.md](VISUAL_SUMMARY.md)** | Infographic-style findings | 12 min | You're a visual learner |
 | **[RESEARCH_MEMO.md](RESEARCH_MEMO.md)** | Full detailed research paper | 25-30 min | You want the complete story |
 
-### 💻 Code & Data
 
-| File | Purpose | Platform | Use If... |
-|------|---------|----------|-----------|
-| **[polyvol](polyvol)** | Complete research framework | Python 3.11+ | You want to reproduce results |
-| **[edge_economics.py](edge_economics.py)** | Economic quantification backtest | Python 3.11+ | You want to run one key script |
 
 ### 🛠️ Setup & Configuration
 
@@ -127,7 +121,7 @@ Contains:
 
 ---
 
-### polyvol_v5.zip
+### polyvol
 **Complete Python research framework.**
 
 Inside:
