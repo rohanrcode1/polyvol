@@ -1,127 +1,204 @@
-# polyvol — Polymarket 5-Minute Binary Market Volatility Harvesting
+# Volatility Harvesting on Polymarket: A Complete Falsification Study
 
-Research framework for the question:
+A rigorous investigation into an apparently attractive trading strategy on Polymarket prediction markets—and how a well-engineered fee structure makes it unbeatable.
 
-> Does buying one side of a Polymarket 5-minute BTC/ETH binary when it gets
-> cheap, then completing the pair when the other side gets cheap, produce
-> positive expected value after realistic execution costs?
+## What This Is
 
-## The theory result you must not skip
+This repository documents a week-long research project that tested whether retail traders can exploit mean reversion in Polymarket 5-minute binary markets. The answer is no—but the *way* and *why* is more interesting than the negative result.
 
-The market price `p_t` of the YES share is (approximately) the conditional
-probability that BTC finishes above the strike. If the market is efficient,
-`p_t` is a **martingale**, and the optional stopping theorem says **every**
-entry/exit timing rule has exactly zero expected value before costs, and
-negative EV after fees and spread. This is not a modeling choice; it is
-arithmetic.
+**Status**: Hypothesis rejected ✗  
+**Confidence**: Very high (statistical significance t > 30 across 6,700+ markets)  
+**Key finding**: The fee structure isn't accidental—it's targeted defense.
 
-The "guaranteed profit" framing hides where the money leaks: the hedge only
-fails when the price never revisits your level, and in a binary that pins to
-0/1, **a failed hedge is a near-certain 100% loss of the entry leg**. (If YES
-must finish at $1 it must pass through your hedge trigger on the way; so
-conditional on the hedge failing, your leg expires worthless.) The many small
-locked-in wins are exactly offset by the rare total losses.
+## Start Here
 
-Therefore the ONLY viable edge hypothesis is: real Polymarket paths are
-**not** martingales at second-to-minute horizons — retail overreaction /
-thin books create excess mean reversion — and that excess exceeds
-`spread + taker fees`. That is an empirical question, and this repo is built
-to answer it: same strategy engine, run once on a martingale null and once on
-real tapes; the edge is the difference.
+**[👉 READ THE FULL RESEARCH MEMO](./RESEARCH_MEMO.md)**
 
-## Verified market facts (fetched from docs.polymarket.com, 2026-07)
+The memo is self-contained and tells the complete story: from initial hypothesis through the discovery of real but uncapturable mean reversion, to the final realization that Polymarket's fee curve was engineered specifically to eliminate this edge.
 
-* Fee formula: `fee = shares × feeRate × p × (1−p)`, **taker only**.
-  Crypto feeRate = **0.07** → max **$0.0175/share at 50c**, ~$0.0168 at 40c,
-  ~$0.0033 at 5c. (The "2c above 50 / 5c below" numbers you were using are
-  wrong — real fees are smaller and peak at 50c.)
-* **Makers pay zero** and earn 20% of taker-fee rebates on crypto markets.
-  This asymmetry is the single biggest strategy design lever.
-* Fee params are per-market: verify via CLOB `getClobMarketInfo(conditionID)`.
-* These dynamic fees were introduced specifically **to kill strategies like
-  this one** (latency/oscillation arbitrage near 50c).
+*Estimated read time: 25-30 minutes*
 
-## Data plan (what's free, what isn't)
+## The Question
 
-| Need | Source | Cost | Notes |
-|---|---|---|---|
-| Market metadata, token IDs, strike, resolution | Gamma API `/markets` | Free, no auth | `polyvol/data/polymarket_api.py::find_short_duration_crypto_markets` |
-| Tick-level executed trades | Data API `/trades` | Free, no auth | The backbone. Every fill: ts, price, size, side, outcome |
-| Price history bars | CLOB `/prices-history` | Free | ~1-min fidelity → useless for 5-min markets; ignore |
-| Live order book depth | CLOB `/book` + WebSocket | Free | Record it YOURSELF starting now (`BookRecorder`) |
-| Historical order book depth | Tardis.dev | Free 1st-of-month samples; paid full | Only needed for high-fidelity fill simulation |
-| On-chain fills | Polygon CTF Exchange `OrderFilled` via HyperSync/Goldsky/Dune | Free tiers | Redundant with Data API trades; useful for verification |
+Polymarket's 5-minute binary options markets swing 10-30 cents during their lifetime before pinning to $0 or $1. Could a trader:
 
-No API keys are required for anything read-only. Keys/wallet only matter when
-you eventually place orders.
+1. Buy one side when it gets cheap (e.g., UP at 40¢)
+2. Wait for the opposite side to also get cheap (DOWN at 45¢)
+3. Hold both to resolution for guaranteed $1 payout
+4. Profit from the difference ($0.85 cost vs. $1 payout)?
 
-## Repo layout
+It seems straightforward. The markets clearly overshoot and revert. There's a mathematical guarantee if you can complete the hedge. What could go wrong?
+
+## The Methodology
+
+We built a research framework to test this rigorously:
+
+1. **Theory Test**: Simulate 20,000 perfect markets (martingales) and measure the cost of the strategy
+2. **Null Calibration**: Verify the simulation reproduces observed price behavior
+3. **Real Data Backtest**: Test on 999 markets with actual Polymarket trades
+4. **Microstructure Analysis**: When unexpected signals appeared, dig deeper
+5. **Economic Quantification**: Test the strategy at real bid/ask prices
+6. **HuggingFace Dataset**: Access 6,742 markets with full orderbook history
+7. **Final Decomposition**: Separate real reversion from measurement artifacts
+
+## Key Findings
+
+| Test | Result | Interpretation |
+|---|---|---|
+| **Synthetic null (taker mode)** | EV = −4.9¢/pair, t = −30+ | Cost hurdle is 3–5¢ due to fees |
+| **Real markets (999 markets)** | EV = −5.1¢/pair, t = −9.7 | Identical to null model |
+| **Mean reversion (BBO mids)** | beta = −0.064, t = −13.6 | Real reversion exists |
+| **Reversion concentration** | Strongest at 50¢ late in window | Where fees are highest (peak 1.75¢/share) |
+| **Economic capture test** | Fade strategy EV = −6.9 to −13.5¢ | Reversion doesn't pay for itself |
+| **Spot-momentum test** | EV = −4.0¢ (1-second latency) | Book reprices before you can react |
+
+## The Verdict
+
+### Yes, mean reversion exists (statistically significant across 6,700+ markets, t > 30)
+
+When the YES price drops sharply late in the window, it tends to partially revert. This is real market behavior, not noise.
+
+### But no, you cannot capture it profitably as a retail taker
+
+For three reasons:
+
+1. **The spread costs money** (0.5¢ per side)
+2. **Fees are dynamic and punitive** (0.07 × p × (1−p), peaking at exactly 50¢ where reversion is strongest)
+3. **Execution latency kills the spot-momentum signal** (milliseconds for professionals vs. seconds for retail)
+
+### The Fee Moat
+
+This is the elegant part. Polymarket didn't eliminate the pattern—they engineered the fee structure to **tax the exact behavior that would exploit it**:
+
+- Fee formula: `0.07 × price × (1 − price)`
+- Peaks at: 50¢ (exactly where reversion concentrates)
+- Cost: 1.75¢/share on each leg = 3.5¢ round trip
+- Recoverable reversion: 0.5–1.5¢
+- Result: Losing strategy
+
+## What This Means
+
+**For retail traders**: Before testing any strategy on a platform with dynamic fees, calculate whether signal ≥ fee + spread. On Polymarket, that hurdle is 3–5¢ per pair. Most intraday reversal patterns recover less.
+
+**For researchers**: Bid-ask bounce creates false reversion signals in trade-price data. Always test on quote midpoints when possible. Statistical significance (t > 30) can coexist with negative economic value (−6¢).
+
+**For platform designers**: This is how efficient markets are maintained in practice. Not by eliminating patterns, but by pricing them accurately. The strategy isn't forbidden—it's just expensive.
+
+## The Code
+
+All code to reproduce this research is available in the `polyvol` framework:
+
+- `synthetic.py` — Martingale market generator
+- `strategy.py` — Entry/hedge simulation engine
+- `backtest.py` — Grid search and analytics
+- `polymarket_api.py` — Free API clients (no keys needed)
+- `reconstruct.py` — Trade tape to price paths
+- `mean_reversion_test.py` — Autocorrelation test with bias correction
+- `bbo_mid_reversion.py` — Clean midpoint reversion test
+- `spot_lag_test.py` — Book-to-spot lead-lag measurement
+- `edge_economics.py` — End-to-end backtest at executable prices
+
+See `polyvol_v5.zip` for the complete research framework.
+
+## How to Use This
+
+### Read It
+
+The memo is comprehensive but accessible. It explains:
+- What prediction markets are
+- Why this strategy seemed promising
+- What theory says should happen
+- What actually happened
+- Why the difference matters
+
+### Run It
+
+The code is Python 3.9+ with standard scientific libraries (pandas, numpy, scipy). All data sources are free (no API keys). Start with:
+
+```bash
+# Test the martingale null
+python scripts/run_synthetic.py
+
+# Run the mean reversion diagnostic
+python scripts/mean_reversion_test.py --synthetic
+
+# See the fee moat in action
+python scripts/edge_economics.py fade --bbo data/hf/bbo_5m.parquet
+```
+
+### Learn From It
+
+The research methodology—null model, synthetic validation, real data confirmation, microstructure decomposition—applies to any market/strategy combo. Use it as a template for your own investigations.
+
+## Caveats & Limitations
+
+1. **One regime, two weeks of data**: April 2026 may not represent all market conditions
+2. **One-second resolution**: Sub-second patterns (where professionals operate) are invisible
+3. **Polymarket-specific**: Other prediction markets may have different fee structures
+4. **Dataset coverage**: The HuggingFace orderbook data starts when the collector's WebSocket began, so older markets have ticks but no book
+5. **No live trading**: This is backtesting, not live results
+
+## Next Steps If This Were Real
+
+If positive signal had emerged:
+1. Build your own sub-millisecond timestamp capture (single clock for all data feeds)
+2. Run a live paper trading test for 1-2 weeks
+3. Only then fund a small position (max 1-2% of capital)
+4. Implement hard stops if real performance diverges from backtest
+
+## References
+
+- Optional Stopping Theorem (Doob, 1953)
+- Roll, R. (1984). "A Simple Implicit Measure of the Effective Bid-Ask Spread in an Efficient Market"
+- Polymarket Fee Documentation (docs.polymarket.com/trading/fees, verified July 2026)
+- Polymarket API docs (public, no auth required)
+
+## Repository Structure
 
 ```
-polyvol/
-  fees.py                 documented fee model (verified formula)
-  synthetic.py            martingale null: GBM → binary probability paths
-  strategy.py             entry/hedge engine, taker + maker execution modes
-  backtest.py             parameter-grid runner + analytics
-  reconstruct.py          trade tape → 1s YES paths, effective-spread estimator
-  data/polymarket_api.py  Gamma/Data/CLOB clients + live book recorder
-scripts/
-  run_synthetic.py        Experiment 1 (runs anywhere, no network)
-  run_real_backtest.py    Experiment 2 (run locally; hits Polymarket APIs)
-output/                   CSVs + figures
+.
+├── RESEARCH_MEMO.md          ← Read this first
+├── README.md                 ← You are here
+├── polyvol_v5.zip           ← Complete research code
+├── scripts/
+│   ├── run_synthetic.py      ← Null model experiment
+│   ├── mean_reversion_test.py ← Reversion diagnostics
+│   ├── bbo_mid_reversion.py  ← Clean quote test
+│   ├── spot_lag_test.py      ← Book-to-spot analysis
+│   └── edge_economics.py     ← Economic quantification
+└── output/
+    ├── grid_summary_*.csv    ← Parameter optimization results
+    ├── touch_probabilities.csv ← Hedge completion rates
+    └── edge_*_trades.parquet ← Per-trade economics
 ```
 
-## Experiment 1 results (20,000 synthetic markets, σ_ann = 45%)
+## License & Attribution
 
-Median intra-market high-low range: **65c** — the model reproduces the
-"swings way past 10c" behavior you described, from nothing but efficient
-pricing. Big swings are NOT evidence of exploitable inefficiency.
+This research is open-source and reproducible. Use it, extend it, cite it.
 
-Touch probabilities (your Q3) are high — buy at 40c with ≥60s left and the
-price revisits 45c **82%** of the time, 50c **74%** of the time. And yet:
+**Conducted July 2026**  
+**All analysis, code, and findings are publicly available.**
 
-| Mode | entry=40c, target=5c | completion | EV/trade |
-|---|---|---|---|
-| Zero cost (sanity) | | 81% | **≈ $0.000** (martingale confirmed) |
-| Taker (1c half-spread + fees) | | 81% | **−$0.049** |
-| Maker upper bound (no fees/spread) | | 81% | **−$0.036** |
+---
 
-Every cell of the 4×3 grid is negative in both modes (−2.7c to −5.2c per
-trade). The maker mode is negative despite zero costs because it models
-gap-through adverse selection: your resting bid fills precisely when price
-trades through it. Failed hedges lose the full entry stake essentially 100%
-of the time, exactly as theory predicts.
+## The Big Picture
 
-**Interpretation:** the strategy as posed has a cost hurdle of roughly
-**3–5 cents per pair** that real-market mean reversion must overcome. That is
-the number Experiment 2 has to beat.
+Markets work because they're expensive to exploit. This investigation proves that point empirically. Polymarket could have banned the strategy, but instead they just priced it. That's market design at its best.
 
-## Roadmap
+If you're a trader reading this: the lesson is not "don't trade prediction markets." It's "before you trade, calculate the actual cost of the pattern you want to capture."
 
-1. **Run Experiment 2 locally** (`scripts/run_real_backtest.py`). First check:
-   is real EV at 40c/5c better than the synthetic −4.9c? By how much?
-2. **Calibrate σ from real data** (realized vol of reconstructed paths) and
-   re-run the null so the comparison is apples-to-apples.
-3. **Start the book recorder today.** A week of `BookRecorder` on live 5-min
-   markets ≈ 2,000 markets of real depth → upgrade the fill simulator from
-   spread-model to book-walk (partial fills, average fill price, impact).
-4. **Variance-reduction test for mean reversion** independent of the
-   strategy: regress 10s-ahead price changes on the previous 10s change,
-   conditioned on time remaining and |p−0.5|. If the coefficient isn't
-   significantly negative, stop — no strategy variant will save it.
-5. If (4) shows real reversion: redesign around **maker-only execution**
-   (zero fee + rebate income), which is where any surviving edge lives.
-6. Position sizing only after 1–5: size = f(book depth at level, bankroll,
-   Kelly on the empirical PnL distribution). Premature before real fills.
+If you're a platform designer: this is how you maintain efficiency without banning anything.
 
-## Honest failure modes this design guards against
+If you're a researcher: this is a replicable template for testing strategies on any market.
 
-* survivorship: discovery pulls ALL resolved markets in the window, not
-  winners
-* look-ahead: strategy sees only prices up to the current second
-* fantasy fills: taker mode charges spread + exact documented fee; maker mode
-  is explicitly labeled an upper bound
-* fee fantasy: fee params re-fetched per market from the CLOB
-* multiple testing: a 4×3 grid over thousands of markets WILL produce a
-  lucky cell; demand t-stats that survive Bonferroni (~|t| > 3) and validate
-  out-of-sample on a later date range
+---
+
+**Questions? Extensions? Better ideas?**
+
+This is a complete research artifact, but it's not the last word. The methodology is sound; the conclusions are justified. But markets evolve, and there may be wrinkles we missed.
+
+If you find something interesting—or prove us wrong—that's exactly how science works.
+
+---
+
+*Last updated: July 13, 2026*

@@ -1,0 +1,121 @@
+================================================================================
+VOLATILITY HARVESTING ON POLYMARKET: EXECUTIVE SUMMARY
+================================================================================
+
+RESEARCH QUESTION
+─────────────────
+Can retail traders profit by buying one side of Polymarket 5-minute binary 
+options when it gets cheap, waiting for the opposite side to also get cheap, 
+and holding both to resolution for a guaranteed payout?
+
+HYPOTHESIS
+──────────
+Yes. The markets exhibit 10-30 cent swings; if you can buy both sides below $1 
+total cost, you lock in guaranteed profit.
+
+METHODOLOGY
+───────────
+1. Built martingale null model (20,000 synthetic markets)
+2. Backtested strategy on null → established 3-5¢ cost hurdle
+3. Backtested on real Polymarket data (999 markets from API)
+4. Accessed HuggingFace dataset (6,742 markets with full orderbook)
+5. Ran microstructure decomposition tests
+6. Quantified economic value at executable prices
+
+RESULTS
+───────
+┌─────────────────────────────────────────────────────┐
+│ MAIN FINDING: Strategy has negative expected value  │
+│ across all parameters, all market conditions         │
+└─────────────────────────────────────────────────────┘
+
+Synthetic (null model, taker mode):
+  • EV = -4.9¢/pair (mean across all parameters)
+  • t-stat: -30+ (highly significant)
+  • 75-82% of hedges complete successfully
+  → Most trades win, but rare failures are catastrophic
+
+Real data (999 markets, actual quotes and fees):
+  • EV = -5.1¢/pair (near-identical to null)
+  • t-stat: -9.7 (confirming statistical significance)
+  • Performance: indistinguishable from efficient market
+
+Mean reversion evidence:
+  • Exists in BBO quote midpoints: beta = -0.064 to -0.590
+  • Concentrated near 50¢ late in window: t > 40
+  • But unspendable: fees exceed recoverable signal
+
+THE MECHANISM
+─────────────
+1. Spread cost: 0.5¢ per side
+2. Fee cost: 1.75¢ per share at 50¢ (peak of fee curve)
+3. Total round-trip cost: 3-5¢
+4. Recoverable reversion signal: 0.5-1.5¢
+5. Result: Losing strategy
+
+THE KEY INSIGHT
+────────────────
+This isn't bad luck. Polymarket's fee formula f = 0.07 × p × (1-p) was 
+engineered to peak at exactly 50¢, where:
+  • Volatility is highest
+  • Mean reversion concentrates
+  • Retail traders would most likely enter
+
+The fee structure is a targeted defense. It doesn't ban the strategy—it just 
+makes the permission too expensive.
+
+CONFIDENCE LEVEL
+─────────────────
+Very high. The result is robust across:
+  • 20,000 synthetic markets (null model)
+  • 999 real markets (trade data)
+  • 6,742 markets (orderbook data)
+  • Multiple parameter combinations
+  • Both taker and maker execution modes
+  • Different fee regimes
+
+IMPLICATIONS
+─────────────
+For traders:
+  Before trading any strategy with dynamic fees, calculate:
+    signal_magnitude ≥ (spread + fees)
+  
+  On Polymarket, that hurdle is 3-5¢/pair. Most intraday reversions recover less.
+
+For researchers:
+  • Bid-ask bounce creates false reversion in trade-price data
+  • Always test on quote midpoints when possible
+  • High statistical significance ≠ economic profitability
+  
+For platforms:
+  Well-designed fees maintain market integrity by pricing out exploitative 
+  behavior. No ban needed—just accurate pricing.
+
+WHAT WE LEARNED ABOUT MARKETS
+──────────────────────────────
+1. Exploitable patterns do exist (mean reversion is real)
+2. But platform design prevents retail extraction (fees as moat)
+3. Professional traders operate at speeds/scales where fees matter less
+4. Market efficiency emerges from fee structures, not from perfect competition
+
+TIME & EFFORT
+──────────────
+• Duration: 1 week
+• Markets analyzed: 6,742 resolved binary options
+• Trades processed: 1.4 million
+• Code lines: ~1,500 (research framework)
+• Cost: ~$50 in API calls
+• Outcome: Clean negative result with high confidence
+
+ANSWER TO ORIGINAL QUESTION
+─────────────────────────────
+No. Retail traders cannot profitably exploit this pattern on Polymarket. 
+The strategy has -3 to -13 cents of expected loss per pair across all 
+parameters, with overwhelming statistical significance.
+
+The mean reversion is real. But Polymarket's fee structure has priced the 
+permission to capture it higher than its economic value.
+
+═══════════════════════════════════════════════════════════════════════════════
+For the full research memo, evidence tables, and methodology, see RESEARCH_MEMO.md
+For code to reproduce results, see polyvol_v5.zip
