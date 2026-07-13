@@ -37,7 +37,7 @@ Friday: Complete falsification with very high confidence
 ### The Setup
 ```
 Polymarket 5-minute binary option
-Question: "Will Bitcoin be above $118,500 by 12:35?"
+Question: "Will Bitcoin be above $63,500 by 12:35?"
 
 Side 1: "UP"    (if yes, pays $1 at resolution)
 Side 2: "DOWN"  (if no, pays $1 at resolution)
@@ -226,26 +226,26 @@ EV = 0.75 × (+0.02 winning trades) + 0.25 × (-0.40 failed hedges)
 
 ```
 ╔════════════════════════════════════════════════════════════╗
-║                    RESEARCH RESULTS                         ║
+║                    RESEARCH RESULTS                        ║
 ╠════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  Synthetic Markets Tested:       20,000                     ║
-║  Real Markets Analyzed:          6,742                      ║
-║  Trade Rows Processed:           1.4 million                ║
-║  Quote Snapshots:                1.9 million                ║
-║                                                              ║
+║                                                            ║
+║  Synthetic Markets Tested:       20,000                    ║
+║  Real Markets Analyzed:          6,742                     ║
+║  Trade Rows Processed:           1.4 million               ║
+║  Quote Snapshots:                1.9 million               ║
+║                                                            ║
 ║  Expected Value (taker):         -4.9¢ to -5.3¢            ║
-║  Statistical Significance:       t > 9.7                    ║
-║  Confidence Level:               Very High (p < 0.0001)     ║
-║                                                              ║
+║  Statistical Significance:       t > 9.7                   ║
+║  Confidence Level:               Very High (p < 0.0001)    ║
+║                                                            ║
 ║  Mean Reversion Signal:          Yes (beta = -0.06 to      ║
-║  (BBO quote midpoints)            -0.59, t > 13.6)          ║
-║  But Economic Value:             Negative (lost to fees)    ║
-║                                                              ║
-║  Cost Hurdle:                    3-5¢ per pair              ║
-║  Recoverable Signal:             0.5-1.5¢ per pair          ║
-║  Ratio:                          Fee / Signal = 2-7×        ║
-║                                                              ║
+║  (BBO quote midpoints)            -0.59, t > 13.6)         ║
+║  But Economic Value:             Negative (lost to fees)   ║
+║                                                            ║
+║  Cost Hurdle:                    3-5¢ per pair             ║
+║  Recoverable Signal:             0.5-1.5¢ per pair         ║
+║  Ratio:                          Fee / Signal = 2-7×       ║
+║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
 ```
 
@@ -256,7 +256,7 @@ EV = 0.75 × (+0.02 winning trades) + 0.25 × (-0.40 failed hedges)
 ```
 Q1: Do 5-minute binaries exhibit exploitable mean reversion?
 A1: Yes. Beta = -0.06 to -0.59 near 50¢ late in window (t > 40).
-    ✓ Statistically unmistakable
+    ✓ Statistically significant
 
 Q2: Can a retail trader capture it?
 A2: No. EV = -5¢/pair, t-stat = -9.7 across 6,742 markets.
@@ -299,12 +299,12 @@ What Traders Learn:
 ┌──────────────────────────────────────────────┐
 │ Before you trade, calculate:                 │
 │                                              │
-│   Signal Magnitude ≥ (Spread + Fees)?       │
+│   Signal Magnitude ≥ (Spread + Fees)?        │
 │                                              │
-│ If yes → profitable                         │
-│ If no  → don't trade it                     │
+│ If yes → profitable                          │
+│ If no  → don't trade it                      │
 │                                              │
-│ This is more important than finding signal. │
+│ This is more important than finding signal.  │
 └──────────────────────────────────────────────┘
 ```
 
@@ -349,16 +349,16 @@ What Traders Learn:
 
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  MARKETS DON'T STAY INEFFICIENT BY LUCK.  ┃
-┃  THEY STAY EFFICIENT BY PRICING.          ┃
-┃                                           ┃
-┃  The strategy we tested is real.          ┃
-┃  The edge is real.                        ┃
-┃  But the permission to use it costs more  ┃
-┃  than it's worth.                         ┃
-┃                                           ┃
-┃  That's how you defend an efficient       ┃
-┃  market without banning anything.         ┃
+┃  MARKETS DON'T STAY INEFFICIENT BY LUCK. ┃
+┃  THEY STAY EFFICIENT BY PRICING.         ┃
+┃                                          ┃
+┃  The strategy we tested is real.         ┃
+┃  The edge is real.                       ┃
+┃  But the permission to use it costs more ┃
+┃  than it's worth.                        ┃
+┃                                          ┃
+┃  That's how you defend an efficient      ┃
+┃  market without banning anything.        ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 

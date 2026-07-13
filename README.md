@@ -4,7 +4,7 @@ A rigorous investigation into an apparently attractive trading strategy on Polym
 
 ## What This Is
 
-This repository documents a week-long research project that tested whether retail traders can exploit mean reversion in Polymarket 5-minute binary markets. The answer is no—but the *way* and *why* is more interesting than the negative result.
+This repository documents a small research project that tested whether retail traders can exploit mean reversion in Polymarket 5-minute binary markets. The answer is no—but the *way* and *why* is more interesting than the negative result.
 
 **Status**: Hypothesis rejected ✗  
 **Confidence**: Very high (statistical significance t > 30 across 6,700+ markets)  
@@ -14,20 +14,20 @@ This repository documents a week-long research project that tested whether retai
 
 **[👉 READ THE FULL RESEARCH MEMO](./RESEARCH_MEMO.md)**
 
-The memo is self-contained and tells the complete story: from initial hypothesis through the discovery of real but uncapturable mean reversion, to the final realization that Polymarket's fee curve was engineered specifically to eliminate this edge.
+The memo tells the complete story: from initial hypothesis through the discovery of real but unattainable mean reversion, to the final realization that Polymarket's fee curve was engineered specifically to eliminate this edge.
 
 *Estimated read time: 25-30 minutes*
 
 ## The Question
 
-Polymarket's 5-minute binary options markets swing 10-30 cents during their lifetime before pinning to $0 or $1. Could a trader:
+Polymarket's 5-minute binary options markets (BTC Up or Down 5m) swing 10-30 cents during their lifetime before pinning to $0 or $1. Could a trader:
 
 1. Buy one side when it gets cheap (e.g., UP at 40¢)
 2. Wait for the opposite side to also get cheap (DOWN at 45¢)
 3. Hold both to resolution for guaranteed $1 payout
 4. Profit from the difference ($0.85 cost vs. $1 payout)?
 
-It seems straightforward. The markets clearly overshoot and revert. There's a mathematical guarantee if you can complete the hedge. What could go wrong?
+It seems straightforward. The markets clearly shift enough to make it possible. There's a mathematical guarantee if you can complete the hedge. What could go wrong?
 
 ## The Methodology
 
@@ -92,19 +92,18 @@ All code to reproduce this research is available in the `polyvol` framework:
 - `strategy.py` — Entry/hedge simulation engine
 - `backtest.py` — Grid search and analytics
 - `polymarket_api.py` — Free API clients (no keys needed)
-- `reconstruct.py` — Trade tape to price paths
+- `reconstruct.py` — Turn trade tape to price paths
 - `mean_reversion_test.py` — Autocorrelation test with bias correction
-- `bbo_mid_reversion.py` — Clean midpoint reversion test
+- `bbo_mid_reversion.py` — Midpoint reversion test
 - `spot_lag_test.py` — Book-to-spot lead-lag measurement
 - `edge_economics.py` — End-to-end backtest at executable prices
 
-See `polyvol_v5.zip` for the complete research framework.
 
 ## How to Use This
 
 ### Read It
 
-The memo is comprehensive but accessible. It explains:
+The memo explains:
 - What prediction markets are
 - Why this strategy seemed promising
 - What theory says should happen
@@ -113,7 +112,7 @@ The memo is comprehensive but accessible. It explains:
 
 ### Run It
 
-The code is Python 3.9+ with standard scientific libraries (pandas, numpy, scipy). All data sources are free (no API keys). Start with:
+The code is Python 3.11+ with standard scientific libraries (pandas, numpy, scipy). All data sources are free (no API keys). Start with:
 
 ```bash
 # Test the martingale null
@@ -128,7 +127,7 @@ python scripts/edge_economics.py fade --bbo data/hf/bbo_5m.parquet
 
 ### Learn From It
 
-The research methodology—null model, synthetic validation, real data confirmation, microstructure decomposition—applies to any market/strategy combo. Use it as a template for your own investigations.
+The research methodology—null model, synthetic validation, real data confirmation, microstructure decomposition—applies to any market/strategy combo. Feel free to use it as a template for your own investigations.
 
 ## Caveats & Limitations
 
@@ -138,13 +137,6 @@ The research methodology—null model, synthetic validation, real data confirmat
 4. **Dataset coverage**: The HuggingFace orderbook data starts when the collector's WebSocket began, so older markets have ticks but no book
 5. **No live trading**: This is backtesting, not live results
 
-## Next Steps If This Were Real
-
-If positive signal had emerged:
-1. Build your own sub-millisecond timestamp capture (single clock for all data feeds)
-2. Run a live paper trading test for 1-2 weeks
-3. Only then fund a small position (max 1-2% of capital)
-4. Implement hard stops if real performance diverges from backtest
 
 ## References
 
@@ -157,19 +149,49 @@ If positive signal had emerged:
 
 ```
 .
-├── RESEARCH_MEMO.md          ← Read this first
-├── README.md                 ← You are here
-├── polyvol_v5.zip           ← Complete research code
-├── scripts/
-│   ├── run_synthetic.py      ← Null model experiment
-│   ├── mean_reversion_test.py ← Reversion diagnostics
-│   ├── bbo_mid_reversion.py  ← Clean quote test
-│   ├── spot_lag_test.py      ← Book-to-spot analysis
-│   └── edge_economics.py     ← Economic quantification
-└── output/
-    ├── grid_summary_*.csv    ← Parameter optimization results
-    ├── touch_probabilities.csv ← Hedge completion rates
-    └── edge_*_trades.parquet ← Per-trade economics
+├── README.md
+├── data/
+│   ├── bbo_5m.parquet
+│   ├── markets_5m.parquet
+│   └── hf/
+│       ├── .cache/
+│       │   └── huggingface/
+│       │       ├── download/
+│       │       │   └── data/
+│       │       │       ├── orderbook/
+│       │       │       └── ticks/
+│       │       └── trees/
+│       └── data/
+│           ├── orderbook/
+│           └── ticks/
+├── output/
+│   ├── edge_fade_trades.parquet
+│   ├── edge_spotmom_trades.parquet
+│   ├── grid_summary_maker.csv
+│   ├── grid_summary_taker.csv
+│   ├── synthetic_results.png
+│   ├── touch_probabilities.csv
+│   ├── real/
+│   └── test/
+├── polyvol/
+│   ├── __init__.py
+│   ├── backtest.py
+│   ├── fees.py
+│   ├── reconstruct.py
+│   ├── strategy.py
+│   ├── strategy_bbo.py
+│   ├── synthetic.py
+│   └── data/
+│       └── polymarket_api.py
+└── scripts/
+    ├── bbo_mid_reversion.py
+    ├── edge.economics.py
+    ├── hf_ingest.py
+    ├── mean_reversion_test.py
+    ├── run_bbo.py
+    ├── run_real_backtest.py
+    ├── run_synthetic.py
+    └── spot_lag_test.py
 ```
 
 ## License & Attribution
@@ -183,9 +205,9 @@ This research is open-source and reproducible. Use it, extend it, cite it.
 
 ## The Big Picture
 
-Markets work because they're expensive to exploit. This investigation proves that point empirically. Polymarket could have banned the strategy, but instead they just priced it. That's market design at its best.
+Markets work because they're expensive to exploit. This investigation proves that point empirically. Polymarket could have banned the strategy, but instead they just priced it. That's an example of great market design.
 
-If you're a trader reading this: the lesson is not "don't trade prediction markets." It's "before you trade, calculate the actual cost of the pattern you want to capture."
+If you're a trader reading this: calculate the actual cost of the pattern you want to capture before you trade.
 
 If you're a platform designer: this is how you maintain efficiency without banning anything.
 
@@ -195,9 +217,7 @@ If you're a researcher: this is a replicable template for testing strategies on 
 
 **Questions? Extensions? Better ideas?**
 
-This is a complete research artifact, but it's not the last word. The methodology is sound; the conclusions are justified. But markets evolve, and there may be wrinkles we missed.
-
-If you find something interesting—or prove us wrong—that's exactly how science works.
+If you find something interesting, feel free to share.
 
 ---
 

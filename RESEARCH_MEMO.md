@@ -1,7 +1,7 @@
 # The Case Against Volatility Harvesting on Polymarket 5-Minute Binary Markets
 ## A Complete Research Arc: From Hypothesis Through Falsification
 
-**Author:** Research Team  
+**Author:** Rohan Raman  
 **Date:** July 2026  
 **Status:** Negative Result — Hypothesis Rejected  
 **Keywords:** Prediction markets, market microstructure, volatility arbitrage, fee analysis, quantitative trading
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-This memo documents a rigorous investigation into a seemingly attractive trading strategy on Polymarket, the world's largest crypto prediction market. The strategy is simple: when one side of a 5-minute binary option becomes cheap due to temporary price swings, buy it, wait for the opposite side to become cheaper, and lock in a guaranteed profit when both sides total less than $1. Over the course of one week, we tested this idea across 6,700+ real markets using multiple methodologies, each designed to catch where we might be fooling ourselves. Every test confirmed one finding: **the strategy has no edge for a retail trader, and the mechanism of failure is not what you might expect.**
+This memo documents an investigation into a seemingly attractive trading strategy on Polymarket, a prediction market. The strategy is simple: when one side of a 5-minute binary option becomes cheap due to temporary price swings, buy it, wait for the opposite side to become cheaper, and lock in a guaranteed profit when both sides total less than $1. Over the course of one week, we tested this idea across 6,700+ real markets using multiple methodologies, each designed to catch where we might be fooling ourselves. Every test confirmed one finding: **the strategy has no edge for a retail trader, and the mechanism of failure is not what you might expect.**
 
 The story of this investigation reveals something deeper than just "this strategy doesn't work." It's about how markets defend themselves, and specifically how Polymarket's fee structure was engineered to make this exact strategy unprofitable. The most interesting finding isn't that we lose money—it's *where* and *why* we lose it, and what that tells us about who can actually profit in these markets.
 
@@ -35,13 +35,14 @@ The story of this investigation reveals something deeper than just "this strateg
 
 ### What Are Polymarket Binary Options?
 
-To understand this story, we need to start with what Polymarket is and why trading on it seemed like it might have an exploitable edge.
+To understand this, we need to start with what Polymarket is and why trading on it seemed like it might have an exploitable edge.
 
-Polymarket is a prediction market platform where people bet on whether events will happen or not. Unlike a stock exchange, where you buy a claim on a company's future earnings, on Polymarket you buy a claim on a specific outcome: "Will Bitcoin be above $100,000 by December 31, 2026?" or "Will it rain in Los Angeles tomorrow?" The platform specializes in very short-term versions of these questions, including 5-minute binary markets on cryptocurrency prices.
+Polymarket is a prediction market platform where people bet on whether events will happen or not. Unlike a stock exchange, where you buy a claim on a company's future earnings, on Polymarket you buy a claim on a specific outcome: "Will Bitcoin Be Above $100,000 By December 31, 2026?" or "Which Country Will Win The World Cup?" The platform specializes in versions of these questions, and for this memo, particularly the market "BTC Up or Down 5m" on cryptocurrency prices.
 
 Here's how it works mechanically:
 
-- A market has exactly two outcomes: UP (the price goes up) or DOWN (the price goes down)
+- The market starts with an initial price of the cryptocurrency (i.e. Bitcoin)
+- There are exactly two outcomes: UP (the price goes up) or DOWN (the price goes down)
 - You can buy either outcome as a share, at any price from $0 to $1
 - When the market resolves, one side pays $1 and the other pays $0
 - The price you pay per share reflects the probability: if UP is trading at $0.40, that roughly means the market thinks there's a 40% chance UP wins
@@ -50,7 +51,7 @@ The key insight that makes the strategy possible is this: **if you own one UP sh
 
 ### The Observation That Started Everything
 
-Here's what the researcher noticed while watching these markets:
+Here's what was noticed while watching these markets:
 
 The markets start around 50¢ for each side (meaning the market is undecided). Over the 5-minute window, prices swing wildly—sometimes 10, 20, even 30 cents in a matter of seconds—before pinning to either $1 or $0 at resolution. For example:
 
@@ -59,7 +60,7 @@ The markets start around 50¢ for each side (meaning the market is undecided). O
 - Minute 4: UP = $0.35, DOWN = $0.65 (DOWN surged back)
 - Minute 5: UP = $0.98, DOWN = $0.02 (resolved UP wins)
 
-Those big swings suggest something inefficient is happening. Could a trader exploit the swings by buying one side when it's cheap, waiting for it to bounce, then buying the other side when *it* becomes cheap? If both sides were purchased for, say, $0.88 total, you'd lock in a $0.12 profit when you could sell both back at $1.
+Those big swings suggest something volatile is happening. Could a trader exploit the swings by buying one side when it's cheap, waiting for it to bounce, then buying the other side when it becomes cheap? If both sides were purchased for, say, $0.88 total, you'd lock in a $0.12 profit when you could sell both back at $1.
 
 This is the strategy: **buy one side when it dips, wait for mean reversion, buy the other side when it also becomes cheap, then hold both to resolution for a guaranteed $1 payout against your lower cost.**
 
@@ -77,15 +78,13 @@ Guaranteed Profit = $1 - (Entry Price A + Entry Price B) - Total Fees
 
 If you could buy YES at $0.40 and NO at $0.45, you'd have paid $0.85 total. Subtract small fees (maybe $0.07), and you're left with a locked-in $0.08 profit, regardless of which side wins.
 
-The researcher's observation was correct: these markets *do* swing wildly. In a 5-minute window, seeing a 20-30 cent swing is completely routine. So the question became: **if I buy one side when it gets cheap, how likely is it that the other side *also* gets cheap (but in a different direction) before the market ends?**
+The observation was correct: these markets *do* swing wildly. In a 5-minute window, seeing a 20-30 cent swing is completely routine. So the question became: **if I buy one side when it gets cheap, how likely is it that the other side *also* gets cheap (but in a different direction) before the market ends?**
 
 Let's call this the "touch probability" question. If I buy YES at 40¢, what percentage of the time does NO hit 45¢ or cheaper before expiration? If that happens 70-80% of the time, and the average profit is positive, we have an edge.
 
 ### Why This Mattered
 
-The researcher had already built successful trading systems in other domains. They understood position sizing, risk management, and the importance of empirical testing. But they also understood something crucial: **just because a strategy seems logical doesn't mean it works in practice.** The goal was to figure out, with certainty, whether this idea had any merit before spending a cent on it.
-
-That's where the investigation started: not with "this is my new trading system," but with "does this idea work, and if not, *why* doesn't it work?"
+Empirical testing is extremely important in algorithmic trading along with position sizing and risk management. **Just because a strategy seems logical doesn't mean it works in practice.** The goal was to figure out, with certainty, whether this idea had any merit before spending on it.
 
 ---
 
@@ -137,7 +136,7 @@ To run these experiments, we built a complete research framework (called `polyvo
 - **Data layer** (`polymarket_api.py`): Free API clients for market discovery and trade history (no keys needed)
 - **Reconstruction** (`reconstruct.py`): Turn raw trade tapes into 1-second price paths
 
-This wasn't academic scaffolding—it was deliberately built to be honest. The taker mode charges fees at realistic levels. The maker mode is explicitly labeled an optimistic upper bound. Slippage and partial fills are accounted for. Every assumption is documented.
+The taker mode charges fees at realistic levels. The maker mode is explicitly labeled an optimistic upper bound. Slippage and partial fills are accounted for. The assumptions are documented.
 
 ---
 
@@ -185,7 +184,7 @@ For YES to resolve at $1, it must pass through your hedge trigger on the way. So
 
 ### What This Taught Us
 
-The null model established a critical baseline: **the cost hurdle is 3-5 cents per pair.** For the strategy to work in reality, Polymarket would need to exhibit more mean reversion than a martingale. The signal would have to be big enough and reliable enough to overcome:
+The null model established a critical baseline: **the cost hurdle is 3-5 cents per pair.** For the strategy to work in reality, Polymarket would need to exhibit more mean reversion than a martingale. Mean reversion is the tendency of the fluctuating price to move back toward the historical average (mean) after deviating from it. The signal would have to be big enough and reliable enough to overcome:
 
 - Bid-ask spread
 - Taker fees (which peak at exactly 50¢, where reversion would be strongest)
@@ -226,9 +225,9 @@ Max fee at 50¢: $0.0175/share
 | 40¢ | 5¢ | 75% | **−5.3¢** | −8.7 |
 | 45¢ | 5¢ | 78% | **−5.4¢** | −8.6 |
 
-**The stunning result**: Real EV landed almost exactly on the synthetic martingale null. Mean −5.1¢ vs. predicted −4.9¢. The t-stats screamed significance.
+**The stunning result**: Real EV landed almost exactly on the synthetic martingale null. Mean −5.1¢ vs. predicted −4.9¢. The t-stats showed significance.
 
-This was the moment we could have stopped. The hypothesis was dead. But we didn't stop, because there was something strange in the data: completion rates were slightly lower than the null, and there were hints of structure in the prices that the martingale shouldn't have.
+The hypothesis was disproven, but the findings from the backtest experiment were intriguing. There was something strange in the data: completion rates were slightly lower than the null, and there were hints of structure in the prices that the martingale shouldn't have.
 
 ---
 
@@ -238,7 +237,7 @@ This was the moment we could have stopped. The hypothesis was dead. But we didn'
 
 When we ran a simple statistical test on the price changes—looking for evidence of mean reversion independent of the strategy—we found something unexpected: **the raw trade prices showed negative autocorrelation** (short-term mean reversion). The signal was small but statistically significant.
 
-This made us pause. If there's real reversion, the strategy should profit from it. Why didn't it?
+If there's real reversion, the strategy should profit from it. Why didn't it?
 
 ---
 
@@ -246,7 +245,7 @@ This made us pause. If there's real reversion, the strategy should profit from i
 
 ### The Bid-Ask Bounce Trap
 
-Here's where the detective work got interesting. When we dug deeper, we discovered the reversion wasn't real—it was a **measurement artifact**.
+Here's where the work got interesting. When we dug deeper, we discovered the reversion wasn't real—it was a **measurement artifact**.
 
 The issue: the trade tape prints prices at which *fills happened*, and fills happen at the bid for sellers and the ask for buyers. So a sequence of trades looks like: ask, ask, bid, ask, bid—prices bounce between bid and ask even when nothing has changed about the true value. This is called "bid-ask bounce," and it mechanically induces negative autocorrelation.
 
@@ -310,6 +309,7 @@ Even with significant price drops (the reversion should be strongest), the strat
 **Test 2: The Spot-Momentum Strategy**
 - After Binance spot price moves 1-2 basis points, buy that direction
 - Exit 10 seconds later at the real bid
+- This strategy exploits latency in our favor
 
 **Result** (realistic 1-second reaction latency):
 ```
@@ -360,7 +360,7 @@ Three decades ago, you might have discovered a statistical pattern and profited 
 2. **Professional latency**: The time between signal and execution is measured in microseconds to milliseconds, not seconds
 3. **Order book depth management**: Market makers adjust depth as risk changes, eliminating the predictable liquidity windows
 
-Polymarket's approach is particularly elegant: rather than eliminating the pattern (which is mathematically hard), they simply price the permission to capture it higher than its economic value.
+Polymarket's approach is rather elegant: instead of eliminating the pattern (which is mathematically hard), they simply price the permission to capture it higher than its economic value.
 
 ### For Retail Traders
 
@@ -412,7 +412,7 @@ The answer turned out to be nuanced:
 
 The strategy loses because of an elegant fee mechanism that taxes retail traders exactly where their most promising trades are. The fee curve wasn't arbitrary—it was engineered to eliminate an exploitable pattern by making the permission too expensive.
 
-For the retail trader, the lesson is: **don't assume inefficiency; calculate whether you can afford to capture it.** For the market platform, the lesson is that well-designed fees don't just make money, they maintain market integrity by pricing out the strategies that would distort the book.
+For the retail trader, the lesson is: **calculate whether you can afford to capture any inefficiencies.** For the market platform, the lesson is that well-designed fees don't just make money, they maintain market integrity by pricing out the strategies that would distort the book.
 
 This is how modern markets work. And now you know how to test whether your strategy survives it.
 

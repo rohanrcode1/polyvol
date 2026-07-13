@@ -21,7 +21,7 @@ def yes_price_series(trades: pd.DataFrame, start_ts, end_ts,
     """
     t = trades.copy()
     # Normalize everything to YES terms: a NO print at q implies YES = 1 - q.
-    is_no = t["outcome"].str.lower().eq("no")
+    is_no = t["outcome"].str.lower().isin(["no", "down"])
     t["yes_px"] = np.where(is_no, 1.0 - t["price"], t["price"])
     # Taker BUY of YES lifts the YES ask; taker SELL hits the YES bid.
     # A BUY of NO is economically a SELL of YES.
@@ -39,7 +39,7 @@ def yes_price_series(trades: pd.DataFrame, start_ts, end_ts,
 def estimate_half_spread(trades: pd.DataFrame) -> float:
     """Effective half-spread from bid/ask prints in the tape."""
     t = trades.copy()
-    is_no = t["outcome"].str.lower().eq("no")
+    is_no = t["outcome"].str.lower().isin(["no", "down"])
     t["yes_px"] = np.where(is_no, 1.0 - t["price"], t["price"])
     buy = t["side"].str.upper().eq("BUY")
     t["aggr"] = np.where(buy ^ is_no, 1, -1)
