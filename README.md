@@ -167,11 +167,11 @@ The research methodology—null model, synthetic validation, real data confirmat
 │   ├── strategy.py
 │   ├── strategy_bbo.py
 │   ├── synthetic.py
-│   └── data/
+│   └── api/
 │       └── polymarket_api.py
 └── scripts/
     ├── bbo_mid_reversion.py
-    ├── edge.economics.py
+    ├── edge_economics.py
     ├── hf_ingest.py
     ├── mean_reversion_test.py
     ├── run_bbo.py
