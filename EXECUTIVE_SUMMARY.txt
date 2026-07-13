@@ -66,7 +66,7 @@ makes the permission too expensive.
 
 CONFIDENCE LEVEL
 ─────────────────
-Very high. The result is robust across:
+Very high. The result is across:
   • 20,000 synthetic markets (null model)
   • 999 real markets (trade data)
   • 6,742 markets (orderbook data)
@@ -118,4 +118,4 @@ permission to capture it higher than its economic value.
 
 ═══════════════════════════════════════════════════════════════════════════════
 For the full research memo, evidence tables, and methodology, see RESEARCH_MEMO.md
-For code to reproduce results, see polyvol_v5.zip
+For code to reproduce results, see polyvol
