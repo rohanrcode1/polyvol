@@ -30,7 +30,7 @@ import numpy as np
 import pandas as pd
 import requests
 
-from polyvol.data.polymarket_api import (
+from polyvol.api.polymarket_api import (
     fetch_updown_markets, fetch_trades, fetch_fee_params)
 from polyvol.reconstruct import (
     yes_price_series, estimate_half_spread, paths_matrix)
